@@ -1,0 +1,71 @@
+# .NET Core / .NET Framework
+## Build output
+bin/
+obj/
+
+## Visual Studio / Rider / Xamarin
+.vs/
+*.userprefs
+*.suo
+*.sln.docstates
+*.user
+*.vcxproj.user
+*.webproj.user
+*.xproj.user
+*.pidb
+*.pdb
+*.ipdb
+*.ilk
+*.opendb
+*.tlog/
+*.cache/
+*.VC.db
+*.VC.opendb
+ipch/
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+*.log
+_ReSharper*/
+
+## NuGet Packages
+*.nupkg
+**/packages/
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# macOS
+.DS_Store
+
+# Linux
+*~
+
+# .NET Core
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Visual Studio Code
+.vscode/
+
+# Rider
+.idea/
+*.sln.iml
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+
+# Roslyn
+/.ide/
+
+# BenchmarkDotNet
+BenchmarkDotNet.Artifacts/
