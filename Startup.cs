@@ -29,10 +29,12 @@ namespace Pace
             });
             services.AddSingleton<IDatabaseService, DatabaseService>();
             services.AddScoped<IScoreService, ScoreService>();
+            services.AddScoped<IWordService, WordService>();
             services.AddAuthorization();
             services.AddHealthChecks();
             services.AddControllers();
-            
+            services.AddHttpClient();
+
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
