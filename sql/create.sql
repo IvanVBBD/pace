@@ -41,9 +41,6 @@ GO
 INSERT INTO [dbo].[USERS]
            ([user_email])
      VALUES
-           ('jklol@gmail.com'),
-		   ('kekw@gmail.com'),
-		   ('PogO@gamil.com'),
 		   ('ivanblizz23@gmail.com')
 GO
 
@@ -53,4 +50,4 @@ INSERT INTO [dbo].[EVENTS]([words],[active])
             ('JAMEL JAKE IVAN KARL',1)
 
 
-SELECT * FROM EVENTS
+SELECT * FROM EVENTRESPONSES
