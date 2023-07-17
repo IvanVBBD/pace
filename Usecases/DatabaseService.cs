@@ -6,7 +6,7 @@ namespace Pace.Usecases
 {
     public class DatabaseService : IDatabaseService
     {
-        private readonly string connectionString = "data source=IVANV\\SQLEXPRESS; database=PaceApp; User ID=259;Password=;Integrated Security=SSPI";
+        private readonly string connectionString = "data source=paceapp.cvrekkideqpb.eu-west-1.rds.amazonaws.com; database=PaceApp; User ID=admin;Password=admin123;";
         private readonly SqlConnection connection;
 
         public DatabaseService()
