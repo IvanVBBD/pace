@@ -12,7 +12,7 @@ namespace Pace.Controllers
     public class WordController : ControllerBase
     {
         [HttpGet]
-        [Authorize]
+        //[Authorize]
         [Route("challenge")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(WordResponse), StatusCodes.Status200OK)]
@@ -36,7 +36,7 @@ namespace Pace.Controllers
         }
 
         [HttpGet]
-        [Authorize]
+        //[Authorize]
         [Route("pratice")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(WordResponse), StatusCodes.Status200OK)]
