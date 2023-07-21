@@ -24,47 +24,83 @@ namespace Pace.Controllers
         }
 
         [HttpPost(Name = nameof(SubmitScore))]
-        //[Authorize]
+        [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK)]
         //[ProducesResponseType(typeof(SubmitTFSAResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> SubmitScore([FromBody] ScoreRequest application, [FromServices] IScoreService useCase)
         {
-            try
+            string authorizationHeader = HttpContext.Request.Headers["Authorization"];
+            if (!string.IsNullOrEmpty(authorizationHeader) && authorizationHeader.StartsWith("Bearer "))
             {
-                // var applicationReq = mapper.Map<CoreModels::ApplicationRequest>(application);
-                // var planNumber = await useCase.SubmitClientApplicationAsync(applicationReq, isUserAuthenticated, traceId, context.User, ct);
-                if ((await useCase.postScore(application)) == true)
+                string token = authorizationHeader.Substring("Bearer ".Length).Trim();
+                try
                 {
-                    return Ok();
-                }
+                    // var applicationReq = mapper.Map<CoreModels::ApplicationRequest>(application);
+                    // var planNumber = await useCase.SubmitClientApplicationAsync(applicationReq, isUserAuthenticated, traceId, context.User, ct);
+                    ClaimsPrincipal principal = JwtTokenValidator.ValidateToken(token, _configuration);
+                    string userId = principal.FindFirstValue("Id");
+                    if (!string.IsNullOrEmpty(userId))
+                    {
+                        if ((await useCase.postScore(application)) == true)
+                        {
+                            return Ok();
+                        }
 
-                throw new Exception("Failed to post score");
+                        throw new Exception("Failed to post score");
+                    }
+                    else
+                    {
+                        return BadRequest("Invalid user ID");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(new ProblemDetails() { Detail = ex.Message });
+                }
             }
-            catch (Exception ex)
+            else
             {
-                return BadRequest(new ProblemDetails() { Detail = ex.Message });
+                return BadRequest("Invalid token");
             }
         }
 
         [HttpGet]
-        //[Authorize]
+        [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(List<EventResponse>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> GetScore([FromServices] IScoreService useCase)
         {
-            try
+            string authorizationHeader = HttpContext.Request.Headers["Authorization"];
+            if (!string.IsNullOrEmpty(authorizationHeader) && authorizationHeader.StartsWith("Bearer "))
             {
-                var scores = await useCase.GetTopScores();
-                //string token = GetToken();
-                return Ok(scores);
+                string token = authorizationHeader.Substring("Bearer ".Length).Trim();
+                try
+                {
+                    ClaimsPrincipal principal = JwtTokenValidator.ValidateToken(token, _configuration);
+                    string userId = principal.FindFirstValue("Id");
+                    if (!string.IsNullOrEmpty(userId))
+                    {
+                        var scores = await useCase.GetTopScores();
+                        // string token = GetToken();
+                        return Ok(scores);
+                    }
+                    else
+                    {
+                        return BadRequest("Invalid User ID");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(new ProblemDetails() { Detail = ex.Message });
+                }
             }
-            catch (Exception ex)
+            else
             {
-                return BadRequest(new ProblemDetails() { Detail = ex.Message });
+                return BadRequest("Invalid token");
             }
         }
 
