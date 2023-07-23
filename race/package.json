@@ -1,0 +1,29 @@
+{
+  "name": "keyboard-racers",
+  "version": "1.0.0",
+  "description": "Race to type the prompted sentence quicker than anyone else",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/IvanVBBD/pace.git"
+  },
+  "keywords": [
+    "keyboard",
+    "racers"
+  ],
+  "author": "jared@bbd.co.za",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/IvanVBBD/pace/issues"
+  },
+  "homepage": "https://github.com/IvanVBBD/pace#readme",
+  "dependencies": {
+    "express": "^4.18.2",
+    "nodemon": "^3.0.1"
+  }
+}
