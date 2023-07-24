@@ -5,7 +5,7 @@ import 'dotenv/config';
 const app = express();
 const port = process.env.PORT;
 const api = process.env.API;
-const idp = process.env.idp
+const idp = process.env.idp;
 
 const StatusCodes = {
   Okay: 200,
@@ -19,28 +19,37 @@ app.get('/', (req, res) => {
 
 app.get('/callback', async (req, res) => {
 
-  const code = req.params?.code;
+  const code = req.query?.code;
 
   if (!code) {
     res.redirect('/');
   }
 
-  const response = await fetch('https://pace.auth.eu-west-1.amazoncognito.com/oauth2/token', {
-    method: 'post',
-    body: {
-      grant_type: 'authorization_code',
-      client_id: process.env.IDP_CLIENT_ID,
-      code,
-    },
-    headers: {
-      'Content-Type': 'application/json',
-    },
+  const data = new URLSearchParams({
+    grant_type: 'authorization_code',
+    client_id: process.env.IDP_CLIENT_ID,
+    code,
+    redirect_uri: process.env.CALLBACK_URL,
   });
 
-  const accessToken = response?.data?.access_token
+  const response = await fetch('https://pace.auth.eu-west-1.amazoncognito.com/oauth2/token', {
+    method: 'post',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: data,
+  });
 
-  console.log('token', accessToken);
-  console.log('response', response);
+  if (!response.ok) {
+    throw new Error('Failed to obtain tokens');
+  }
+
+  const {
+    access_token: accessToken,
+    id_token: idToken,
+  } = await response.json();
+
+  console.log(`${accessToken} + ${idToken}`);
 
   res.redirect('/api/score');
 });
