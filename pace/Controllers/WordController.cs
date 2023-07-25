@@ -3,6 +3,7 @@ using Pace.interfaces;
 using Pace.Models;
 using System.Text.Json.Nodes;
 using System.Text.Json;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Pace.Controllers
 {
@@ -12,6 +13,7 @@ namespace Pace.Controllers
     {
         [HttpGet]
         [Route("challenge")]
+        [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(WordResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -34,7 +36,8 @@ namespace Pace.Controllers
         }
 
         [HttpGet]
-        [Route("pratice")]
+        [Route("practice")]
+        [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(WordResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -55,8 +58,5 @@ namespace Pace.Controllers
                 return BadRequest(new ProblemDetails() { Detail = ex.Message });
             }
         }
-
-
-
     }
 }

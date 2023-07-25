@@ -9,6 +9,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Pace
 {
@@ -34,7 +36,24 @@ namespace Pace
             services.AddHealthChecks();
             services.AddControllers();
             services.AddHttpClient();
-
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+        .AddJwtBearer(options =>
+        {
+            options.Authority = Configuration["Jwt:Issuer"];
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = false,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = false,
+                ValidIssuer = Configuration["Jwt:Issuer"],
+                LifetimeValidator = (before, expires, token, param) => expires > DateTime.UtcNow,
+            };
+        });
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -49,7 +68,7 @@ namespace Pace
             else
             {
                 app.UseDeveloperExceptionPage();
-                    //.UseCXSwaggerGeneration(provider);
+                //.UseCXSwaggerGeneration(provider);
             }
 
             app.UseHttpsRedirection();
@@ -76,8 +95,6 @@ namespace Pace
                     });
                 endpoints.MapControllers();
             });
-
-
         }
     }
 }
