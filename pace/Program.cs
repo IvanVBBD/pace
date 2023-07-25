@@ -15,15 +15,15 @@ var builder = WebApplication.CreateBuilder(args);
 //JWT Authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
 {
+    options.Authority = builder.Configuration["Jwt:Issuer"];
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
-        ValidateAudience = true,
+        ValidateAudience = false,
         ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
+        ValidateIssuerSigningKey = false,
         ValidIssuer = builder.Configuration["Jwt:Issuer"],
-        ValidAudience = builder.Configuration["Jwt:Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("n3WSkrbsLTHXbog3JdW0Co0y/yA1/nsXWk6cF+GYGb4="))
+        LifetimeValidator = (before, expires, token, param) => expires > DateTime.UtcNow,
     };
     options.Events = new JwtBearerEvents()
     {
