@@ -28,11 +28,12 @@ app.get('/callback', async (req, res) => {
   const data = new URLSearchParams({
     grant_type: 'authorization_code',
     client_id: process.env.IDP_CLIENT_ID,
+    client_secret: process.env.CLIENT_SECRET,
     code,
     redirect_uri: process.env.CALLBACK_URL,
   });
 
-  const response = await fetch('https://pace.auth.eu-west-1.amazoncognito.com/oauth2/token', {
+  const response = await fetch('https://paceapp.auth.eu-west-1.amazoncognito.com/oauth2/token', {
     method: 'post',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
@@ -41,6 +42,7 @@ app.get('/callback', async (req, res) => {
   });
 
   if (!response.ok) {
+    console.log(response);
     throw new Error('Failed to obtain tokens');
   }
 
@@ -49,7 +51,7 @@ app.get('/callback', async (req, res) => {
     id_token: idToken,
   } = await response.json();
 
-  console.log(`${accessToken} + ${idToken}`);
+  console.log(`access token - \n${accessToken}\nID token - \n${idToken}`);
 
   res.redirect('/api/score');
 });
