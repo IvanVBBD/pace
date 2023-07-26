@@ -76,6 +76,7 @@ app.get('/callback', async (req, res) => {
   const data = new URLSearchParams({
     grant_type: 'authorization_code',
     client_id: clientId,
+    client_secret: process.env.CLIENT_SECRET,
     code,
     redirect_uri: callbackUrl,
   });
@@ -96,6 +97,7 @@ app.get('/callback', async (req, res) => {
   // TODO: Get and save username from idToken
 
   req.session.accessToken = accessToken;
+  console.log(`access token - \n${accessToken}\nID token - \n${idToken}`);
 
   res.redirect('/api/score');
 });
