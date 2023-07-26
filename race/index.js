@@ -1,20 +1,68 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
 import 'dotenv/config';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import bodyParser from 'body-parser';
+import session from 'express-session';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
+app.use(bodyParser.json());
+
+app.use(session({
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: true },
+}));
+
 const port = process.env.PORT;
 const api = process.env.API;
-const idp = process.env.idp;
+const idp = process.env.IDP_ENDPOINT;
+const callbackUrl = process.env.CALLBACK_URL;
+const clientId = process.env.IDP_CLIENT_ID;
 
 const StatusCodes = {
-  Okay: 200,
   BadGateway: 502,
   InvalidResponse: 424,
 };
 
+const get = async (url, req, options = {}) => {
+
+  if (req?.session?.accessToken) {
+    options.headers.Authorization = `Bearer ${req.session.accessToken}`;
+  }
+
+  const response = await fetch(url, options);
+
+  if (!response.ok) {
+    return {
+      error: {
+        code: StatusCodes.InvalidResponse,
+        message: 'Invalid response from upstream',
+        response,
+      },
+    };
+  }
+
+  try {
+    return await response.json();
+  } catch (error) {
+    return {
+      error: {
+        code: StatusCodes.BadGateway,
+        message: 'An error occured',
+        response,
+      },
+    };
+  }
+};
+
 app.get('/', (req, res) => {
-  res.send(`<a href="/api/score">score</a><br/><a href="/api/challenge">challenge</a><br/><a href="/api/practice">practice</a><br/><a href="${idp}">login</a>`);
+  res.send(`<a href="/api/score">score</a><br/><a href="/api/challenge">challenge</a><br/><a href="/api/practice">practice</a><br/><a href="${idp}/oauth2/authorize?client_id=${clientId}&response_type=code&scope=email+openid+phone&redirect_uri=${callbackUrl}">login</a>`);
 });
 
 app.get('/callback', async (req, res) => {
@@ -27,12 +75,12 @@ app.get('/callback', async (req, res) => {
 
   const data = new URLSearchParams({
     grant_type: 'authorization_code',
-    client_id: process.env.IDP_CLIENT_ID,
+    client_id: clientId,
     code,
-    redirect_uri: process.env.CALLBACK_URL,
+    redirect_uri: callbackUrl,
   });
 
-  const response = await fetch('https://pace.auth.eu-west-1.amazoncognito.com/oauth2/token', {
+  const response = await get(`${idp}/oauth2/token`, req, {
     method: 'post',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
@@ -40,68 +88,38 @@ app.get('/callback', async (req, res) => {
     body: data,
   });
 
-  if (!response.ok) {
-    throw new Error('Failed to obtain tokens');
-  }
-
   const {
     access_token: accessToken,
     id_token: idToken,
-  } = await response.json();
+  } = response;
 
-  console.log(`${accessToken} + ${idToken}`);
+  // TODO: Get and save username from idToken
+
+  req.session.accessToken = accessToken;
 
   res.redirect('/api/score');
 });
 
+/* Authenticated endpoints */
+
+// TODO: Verify token for each request with middlewares
+
 app.get('/api/score', async (req, res) => {
-  // TODO: Make all routes do proper catches
+  const response = await get(`${api}/score`, req);
 
-  const response = await fetch(`${api}/score`);
-
-  if (response.status !== StatusCodes.Okay) {
-    res.status(StatusCodes.InvalidResponse).send({
-      response,
-    });
-  }
-
-  try {
-    res.send(await response.json());
-  } catch (error) {
-    res.status(StatusCodes.BadGateway).send('Invalid response from server');
-  }
+  res.send(response);
 });
 
 app.get('/api/challenge', async (req, res) => {
-  const response = await fetch(`${api}/Word/challenge`);
+  const response = await get(`${api}/Word/challenge`, req);
 
-  if (response.status !== StatusCodes.Okay) {
-    res.status(StatusCodes.InvalidResponse).send({
-      response,
-    });
-  }
-
-  try {
-    res.send(await response.json());
-  } catch (error) {
-    res.status(StatusCodes.BadGateway).send('Invalid response from server');
-  }
+  res.send(response);
 });
 
 app.get('/api/practice', async (req, res) => {
-  const response = await fetch(`${api}/Word/pratice`);
+  const response = await get(`${api}/Word/pratice`, req);
 
-  if (response.status !== StatusCodes.Okay) {
-    res.status(StatusCodes.InvalidResponse).send({
-      response,
-    });
-  }
-
-  try {
-    res.send(await response.json());
-  } catch (error) {
-    res.status(StatusCodes.BadGateway).send('Invalid response from server');
-  }
+  res.send(response);
 });
 
 app.post('/api/score', async (req, res) => {
@@ -113,7 +131,7 @@ app.post('/api/score', async (req, res) => {
 
   // TODO: Sanitize input
 
-  const response = await fetch(`${api}/score`, {
+  const response = await get(`${api}/score`, req, {
     body: {
       time,
       username,
@@ -124,17 +142,7 @@ app.post('/api/score', async (req, res) => {
     },
   });
 
-  if (response.status !== StatusCodes.Okay) {
-    res.status(StatusCodes.InvalidResponse).send({
-      response,
-    });
-  }
-
-  try {
-    res.send(await response.json());
-  } catch (error) {
-    res.status(StatusCodes.BadGateway).send('Invalid response from server');
-  }
+  res.send(response);
 });
 
 app.listen(port);
