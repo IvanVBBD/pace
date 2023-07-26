@@ -1,5 +1,6 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
+import fetch from "node-fetch";
 import 'dotenv/config';
 
 const app = express();
