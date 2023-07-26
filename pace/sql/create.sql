@@ -11,7 +11,7 @@ GO
 
 CREATE TABLE [USERS] (
   [user_id] integer IDENTITY(1,1) PRIMARY KEY,
-  [user_email] nvarchar(255) UNIQUE,
+  [user_name] nvarchar(255) UNIQUE,
 )
 GO
 
@@ -27,7 +27,7 @@ CREATE TABLE [EVENTRESPONSES]
   [response_id] INTEGER IDENTITY(1,1) PRIMARY KEY,
   [event_id] INTEGER,
   [user_id] INTEGER,
-  [duration] TIME(0)
+  [duration] INTEGER
 )
 GO
 
@@ -39,9 +39,9 @@ GO
 
 
 INSERT INTO [dbo].[USERS]
-           ([user_email])
+           ([user_name])
      VALUES
-		   ('ivanblizz23@gmail.com')
+		   ('testuser')
 GO
 
 
@@ -50,4 +50,4 @@ INSERT INTO [dbo].[EVENTS]([words],[active])
             ('JAMEL JAKE IVAN KARL',1)
 
 
-SELECT * FROM EVENTRESPONSES
+SELECT * FROM USERS

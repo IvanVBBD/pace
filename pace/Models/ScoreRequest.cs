@@ -8,6 +8,6 @@ namespace Pace.Models
         public string? username { get; set; }
 
         [Required()]
-        public DateTime? time { get; set; }
+        public int? time { get; set; }
     }
 }

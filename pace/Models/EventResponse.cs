@@ -2,7 +2,7 @@
 {
     public class EventResponse
     {
-        public string UserEmail { get; set; }
-        public TimeSpan Duration { get; set; }
+        public string username { get; set; }
+        public int Duration { get; set; }
     }
 }
