@@ -1,11 +1,12 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
-import fetch from "node-fetch";
+import fetch from 'node-fetch';
 import 'dotenv/config';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import bodyParser from 'body-parser';
 import session from 'express-session';
+import { authenticate } from './middlewares/authenticate.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -17,7 +18,6 @@ app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: true,
-  cookie: { secure: true },
 }));
 
 const port = process.env.PORT;
@@ -31,10 +31,13 @@ const StatusCodes = {
   InvalidResponse: 424,
 };
 
-const get = async (url, req, options = {}) => {
+const get = async (url, accessToken, options = {}) => {
 
-  if (req?.session?.accessToken) {
-    options.headers.Authorization = `Bearer ${req.session.accessToken}`;
+  if (accessToken) {
+    options.headers = {
+      ...options.headers,
+      Authorization: `Bearer ${accessToken}`,
+    };
   }
 
   const response = await fetch(url, options);
@@ -82,7 +85,7 @@ app.get('/callback', async (req, res) => {
     redirect_uri: callbackUrl,
   });
 
-  const response = await get(`${idp}/oauth2/token`, req, {
+  const response = await get(`${idp}/oauth2/token`, undefined, {
     method: 'post',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
@@ -95,34 +98,31 @@ app.get('/callback', async (req, res) => {
     id_token: idToken,
   } = response;
 
-  // TODO: Get and save username from idToken
-
   req.session.accessToken = accessToken;
-  console.log(`access token - \n${accessToken}\nID token - \n${idToken}`);
+  req.session.idToken = idToken;
 
-  res.send(`access token - \n${accessToken}\nID token - \n${idToken}`);
-
-  // res.redirect('/api/score');
+  res.redirect('/api/score');
 });
 
 /* Authenticated endpoints */
 
-// TODO: Verify token for each request with middlewares
+app.use('/', authenticate);
 
 app.get('/api/score', async (req, res) => {
-  const response = await get(`${api}/score`, req);
+
+  const response = await get(`${api}/score`, req.session.accessToken);
 
   res.send(response);
 });
 
 app.get('/api/challenge', async (req, res) => {
-  const response = await get(`${api}/Word/challenge`, req);
+  const response = await get(`${api}/Word/challenge`, req.session.accessToken);
 
   res.send(response);
 });
 
 app.get('/api/practice', async (req, res) => {
-  const response = await get(`${api}/Word/pratice`, req);
+  const response = await get(`${api}/Word/pratice`, req.session.accessToken);
 
   res.send(response);
 });
@@ -136,7 +136,7 @@ app.post('/api/score', async (req, res) => {
 
   // TODO: Sanitize input
 
-  const response = await get(`${api}/score`, req, {
+  const response = await get(`${api}/score`, req.session.accessToken, {
     body: {
       time,
       username,
