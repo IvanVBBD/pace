@@ -139,25 +139,33 @@ app.get('/api/practice', async (req, res) => {
 
 app.post('/api/score', async (req, res) => {
 
-  const {
-    time,
-    username,
-  } = req.body;
+  const time = req.body.time;
+  const username = req.user?.['cognito:username'];
 
-  // TODO: Sanitize input
+  if (Number.isNaN(time) || !username) {
+    res.status(404).send({ error: 'Method not allowed' });
+  }
 
   const response = await get(`${api}/score`, req.session.accessToken, {
-    body: {
-      time,
+    body: JSON.stringify({
+      time: Number(time),
       username,
-    },
+    }),
     method: 'post',
     headers: {
       'Content-Type': 'application/json',
     },
   });
 
-  res.send(response);
+  if (!response.ok) {
+    res.status(StatusCodes.InvalidResponse).send({
+      error: {
+        message: 'Failed to add score',
+        response,
+      },
+    });
+  }
+  res.status(200);
 });
 
 app.listen(port);

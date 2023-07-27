@@ -13,14 +13,13 @@ const logoutBtn = document.querySelector('.logout-button');
 const gameOver = document.querySelector('.game-over');
 const gameOverText = document.querySelector('.game-over-text');
 const content = document.querySelector('.content');
-let [milliseconds, seconds, minutes, hours] = [0, 0, 0, 0];
 let int = null;
 let combinedString = "";
 let count = 0;
-let h = 0;
-let m = 0;
-let s = 0;
-let ms = 0;
+let incorrect = 0;
+let duration = 0;
+const startTime = new Date().getTime();
+let shouldLogScore = false;
 
 const getWords = async url => {
   
@@ -89,7 +88,10 @@ if (challenge) {
     localStorage.setItem("title", "Daily Challenge");
     getWords('/api/practice/').then(words => {
       localStorage.setItem('words', JSON.stringify(words));
-    }).finally(() => window.location.href = '/game');
+    }).finally(() => {
+      shouldLogScore = true;
+      window.location.href = '/game';
+    });
   });
 }
 
@@ -132,7 +134,6 @@ if (timer) {
     let character = event.key;
 
     if (combinedString[count] === character) {
-      console.log("correct");
       correctlyTyped += character;
 
       if (combinedString[count] !== " ") {
@@ -146,22 +147,38 @@ if (timer) {
       }
 
       count++;
-      let dura = `${h}:${m}:${s}`;
-      trainSpeed(dura);
+      updateTrain();
 
       if (count === combinedString.length) {
-        console.log("done");
-        let duration = `${h}:${m}:${s}`;
-        console.log(`${h}:${m}:${s}:${ms}`);
-        console.log(convertToMilliSeconds(duration));
-		timer.style.display = 'none';
-		content.style.display = 'none';
-		gameOver.style.display = 'flex';
-		gameOverText.textContent += `${h}:${m}:${s}:${ms}`;
+        timer.style.display = 'none';
+        content.style.display = 'none';
+        gameOver.style.display = 'flex';
+        gameOverText.textContent += msToHMS(duration);
+
+        if (incorrect > 0) {
+          const penalty = 2000 * incorrect;
+          gameOverText.textContent += ' \nWith a penalty of: ' + msToHMS(penalty);
+          duration += penalty;
+        }
+
+        if (shouldLogScore) {
+          fetch('/api/score/', {
+            method: 'post',
+            body: JSON.stringify({
+              time: duration,
+            }),
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          }).then(response => {
+            console.log(response);
+          }).finally(() => shouldLogScore = false);
+        }
 
       }
     } else {
       if (combinedString[count] !== " ") {
+        incorrect++;
         let temp = combinedString.split("");
         temp[
           count
@@ -173,54 +190,24 @@ if (timer) {
 }
 
 function displayTimer() {
-  milliseconds += 10;
-  if (milliseconds == 1000) {
-    milliseconds = 0;
-    seconds++;
-    if (seconds == 60) {
-      seconds = 0;
-      minutes++;
-      if (minutes == 60) {
-        minutes = 0;
-        hours++;
-      }
-    }
-  }
-  h = hours < 10 ? "0" + hours : hours;
-  m = minutes < 10 ? "0" + minutes : minutes;
-  s = seconds < 10 ? "0" + seconds : seconds;
-  ms =
-    milliseconds < 10
-      ? "00" + milliseconds
-      : milliseconds < 100
-      ? "0" + milliseconds
-      : milliseconds;
-  timer.innerText = ` ${h} : ${m} : ${s}`;
+  duration = new Date().getTime() - startTime;
+  timer.innerText = msToHMS(duration);
 }
 
-function msToHMS( duration ) {
+function msToHMS(duration) {
 
-  let milliseconds = parseInt((duration % 1000) / 100);
+  const milliseconds = parseInt((duration % 1000) / 100);
   let seconds = parseInt((duration / 1000) % 60);
   let minutes = parseInt((duration / (1000 * 60)) % 60);
 
   minutes = (minutes < 10) ? "0" + minutes : minutes;
   seconds = (seconds < 10) ? "0" + seconds : seconds;
-  milliseconds = (milliseconds < 10) ? "00" + milliseconds : (milliseconds < 100) ? "0" + milliseconds : milliseconds;
 
   return minutes + ":" + seconds + ":" + milliseconds;
 }
 
 function convertArrayToString(arr){
   combinedString = arr.join(' ');
-}
-
-function convertToMilliSeconds(userTime) {
-  let a = userTime.split(":");
-  //let ms = milliseconds < 10 ? '00' + milliseconds : milliseconds < 100 ? '0' + milliseconds : milliseconds;
-  let secs = +a[0] * 60 * 60 + +a[1] * 60 + +a[2];
-
-	return ((secs * 1000) + ms);
 }
 
 function convertToSeconds(userTime) {
@@ -244,11 +231,8 @@ function createLeaderboard() {
   }
 }
 
-function trainSpeed(userTime) {
-  let timeElapsed = convertToSeconds(userTime);
-  let cps = Math.round(count / timeElapsed /* * 60*/);
-  let timeToFinish = combinedString.length * cps - count * cps;
-  train.style.animation = `train ${timeToFinish}s linear infinite`;
+function updateTrain() {
+  train.style.transform = `translateX(calc(90vw / ${combinedString.length / (count || 1) }))`;
 }
 
 /*function addSpanToCharacters(input){
