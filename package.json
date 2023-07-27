@@ -6,7 +6,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "install:frontend": "npm install --prefix ./race",
-    "start:frontend": "cd ./race && npm run start"
+    "start:frontend": "cd ./race && npm run start",
+    "build:backend": "dotnet publish -c Release -o out ./pace/Pace.csproj",
+    "start:backend": "dotnet out/Pace.dll --urls=http://0.0.0.0:8080"
   },
   "author": "",
   "license": "ISC"

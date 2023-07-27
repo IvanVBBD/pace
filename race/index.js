@@ -97,10 +97,11 @@ app.get('/callback', async (req, res) => {
 
   // TODO: Get and save username from idToken
 
-  req.session.accessToken = accessToken;
   console.log(`access token - \n${accessToken}\nID token - \n${idToken}`);
 
-  res.redirect('/api/score');
+  res.send(`access token - \n${accessToken}\nID token - \n${idToken}`);
+
+  // res.redirect('/api/score');
 });
 
 /* Authenticated endpoints */
