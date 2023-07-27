@@ -71,10 +71,6 @@ app.use('/static',express.static(`${__dirname}/static/`));
 app.use('/welcome', publicRouter);
 app.use('/', privateRouter);
 
-app.get('/', (req, res) => {
-  res.send(`<a href="/api/score">score</a><br/><a href="/api/challenge">challenge</a><br/><a href="/api/practice">practice</a><br/><a href="${idp}/oauth2/authorize?client_id=${clientId}&response_type=code&scope=email+openid+phone&redirect_uri=${encodeURIComponent(callbackUrl)}">login</a>`);
-});
-
 app.get('/callback', async (req, res) => {
 
   const code = req.query?.code;
@@ -98,7 +94,7 @@ app.get('/callback', async (req, res) => {
     },
     body: data,
   });
-
+  
   const {
     access_token: accessToken,
     id_token: idToken,
@@ -107,15 +103,20 @@ app.get('/callback', async (req, res) => {
   req.session.accessToken = accessToken;
   req.session.idToken = idToken;
 
-  res.redirect('/api/score');
+  res.redirect('/');
+});
+
+app.get('/login', (req, res) => {
+  res.redirect(`${idp}/oauth2/authorize?client_id=${clientId}&response_type=code&scope=email+openid+phone&redirect_uri=${encodeURIComponent(callbackUrl)}`);
 });
 
 /* Authenticated endpoints */
 
 app.use('/', authenticate);
+app.use('/', privateRouter);
 
 app.get('/api/score', async (req, res) => {
-
+  
   const response = await get(`${api}/score`, req.session.accessToken);
 
   res.send(response);

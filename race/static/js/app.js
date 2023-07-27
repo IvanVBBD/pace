@@ -16,13 +16,29 @@ let h = 0;
 let m = 0;
 let s = 0;
 let ms = 0;
-const words = [
-	'A', 'mobile', 'app', 'developer', 'can', 'use', 'a', 'SDK', 'to', 'integrate', 'with', 'Cognito', 'or', 'directly', 'access', 'server-side', 'APIs.'
-]
 
 const leaderboardlist = [
 	'Coffee 02:30','Tea 3:00','Milk 5:00','Water 05:30','Juice 03:00','Ace 06:00','Energy 06:30','Chicken 06:45','Beef 07:00','Apple 07:30'
 ]
+
+const getWords = url => {
+  
+  try {
+    return fetch(url).then(response => {
+
+      if (!response.ok) {
+        console.error('Could not get practice words');
+      }
+  
+      return response.json().then(json => json.words);
+    });
+
+  } catch {
+    console.error('Could not get practice words');
+    return [];
+  }
+}
+let words = getWords('/api/practice/');
 
 if (loginBtn) {
 	loginBtn.addEventListener('click', () => {
@@ -37,6 +53,9 @@ if (leaderboardScreen) {
 
 
 if(practice){
+
+  words = getWords('/api/practice');
+
 	practice.addEventListener('click', () => {
 		localStorage.setItem('title','Practice');
 		window.location.href = '/game';
