@@ -63,7 +63,7 @@ const get = async (url, req, options = {}) => {
 };
 
 app.get('/', (req, res) => {
-  res.send(`<a href="/api/score">score</a><br/><a href="/api/challenge">challenge</a><br/><a href="/api/practice">practice</a><br/><a href="${idp}/oauth2/authorize?client_id=${clientId}&response_type=code&scope=email+openid+phone&redirect_uri=${callbackUrl}">login</a>`);
+  res.send(`<a href="/api/score">score</a><br/><a href="/api/challenge">challenge</a><br/><a href="/api/practice">practice</a><br/><a href="${idp}/oauth2/authorize?client_id=${clientId}&response_type=code&scope=email+openid+phone&redirect_uri=${encodeURIComponent(callbackUrl)}">login</a>`);
 });
 
 app.get('/callback', async (req, res) => {
