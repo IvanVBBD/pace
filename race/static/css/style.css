@@ -138,11 +138,25 @@
 
 .train img{
 	width: 350px;
-	
+
 }
 @keyframes train{
 
 	100%{
 		transform: translateX(100%)
 	}
+}
+
+.back-button {
+	margin: 20px;
+	width: 60px;
+	height: 60px;
+	color: red;
+	cursor: pointer;
+
+	-webkit-transform:rotate(270deg);
+	-moz-transform: rotate(270deg);
+	-ms-transform: rotate(270deg);
+	-o-transform: rotate(270deg);
+	transform: rotate(270deg);
 }
