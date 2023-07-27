@@ -52,9 +52,11 @@ app.get('/callback', async (req, res) => {
     id_token: idToken,
   } = await response.json();
 
-  console.log(`access token - \n${accessToken}\nID token - \n${idToken}`);
+  // console.log(`access token - \n${accessToken}\nID token - \n${idToken}`);
 
-  res.redirect('/api/score');
+  res.send(`access token - \n${accessToken}\nID token - \n${idToken}`);
+
+  // res.redirect('/api/score');
 });
 
 app.get('/api/score', async (req, res) => {
