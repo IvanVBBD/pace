@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Pace.interfaces;
 using Pace.Models;
 using System.Diagnostics;
@@ -10,9 +11,9 @@ namespace Pace.Controllers
     [ApiController]
     public class ScoreController : ControllerBase
     {
-
         [HttpPost(Name = nameof(SubmitScore))]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [Authorize]
         //[ProducesResponseType(typeof(SubmitTFSAResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -22,23 +23,22 @@ namespace Pace.Controllers
             {
                 // var applicationReq = mapper.Map<CoreModels::ApplicationRequest>(application);
                 // var planNumber = await useCase.SubmitClientApplicationAsync(applicationReq, isUserAuthenticated, traceId, context.User, ct);
-                if((await useCase.postScore(application)) == true)
+                if ((await useCase.postScore(application)) == true)
                 {
                     return Ok();
                 }
 
                 throw new Exception("Failed to post score");
-                
             }
             catch (Exception ex)
             {
                 return BadRequest(new ProblemDetails() { Detail = ex.Message });
             }
         }
-        
-        
+
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [Authorize]
         [ProducesResponseType(typeof(List<EventResponse>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -47,13 +47,12 @@ namespace Pace.Controllers
             try
             {
                 var scores = await useCase.GetTopScores();
-                return Ok(scores);                
+                return Ok(scores);
             }
             catch (Exception ex)
             {
                 return BadRequest(new ProblemDetails() { Detail = ex.Message });
             }
         }
-
     }
 }
