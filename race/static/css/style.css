@@ -32,6 +32,28 @@
 	margin-top: 50px;
 }
 
+.game-over{
+	display: none;
+	justify-content: center;
+}
+
+.game-over-text{
+	font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+  	font-size:  xxx-large;
+  	letter-spacing: 0.3rem;
+	color: white;
+	text-shadow: -1px -1px 1px #808080,
+	-2px -2px 1px #808080,
+	-3px -3px 1px #808080,
+	-4px -4px 1px #808080,
+	-5px -5px 1px #808080,
+	-6px -6px 1px #808080,
+	-7px -7px 5px rgba(0,0,128,0.75);
+	display: flex;
+	justify-content: center;
+	margin-top: 50px;
+}
+
 .content{
 	display: flex;
 	justify-content: center;
