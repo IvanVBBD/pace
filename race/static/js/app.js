@@ -18,37 +18,46 @@ let m = 0;
 let s = 0;
 let ms = 0;
 
-const leaderboardlist = [
-  "Coffee 02:30",
-  "Tea 3:00",
-  "Milk 5:00",
-  "Water 05:30",
-  "Juice 03:00",
-  "Ace 06:00",
-  "Energy 06:30",
-  "Chicken 06:45",
-  "Beef 07:00",
-  "Apple 07:30",
-];
-
-const getWords = url => {
+const getWords = async url => {
   
   try {
-    return fetch(url).then(response => {
 
-      if (!response.ok) {
-        console.error('Could not get practice words');
-      }
-  
-      return response.json().then(json => json.words);
-    });
+    const response = await fetch(url);
 
-  } catch {
-    console.error('Could not get practice words');
+    if (!response.ok) {
+      console.error(`Invalid Response from ${url}`);
+    }
+
+    const json = await response.json();
+    return json.words;
+
+  } catch (error) {
+    console.error(`Could not get ${url}`);
+    console.error(error);
     return [];
   }
 }
-let words = getWords('/api/practice/');
+
+const getLeaderboard = async () => {
+
+  const url = '/api/score/';
+
+  try {
+
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      console.error(`Invalid Response from ${url}`);
+    }
+
+    return await response.json();
+
+  } catch (error) {
+    console.error(`Could not get ${url}`);
+    console.error(error);
+    return [];
+  }
+}
 
 if (loginBtn) {
   loginBtn.addEventListener("click", () => {
@@ -63,25 +72,28 @@ if (leaderboardScreen) {
 
 if(practice){
 
-  words = getWords('/api/practice');
-
 	practice.addEventListener('click', () => {
 		localStorage.setItem('title','Practice');
-		window.location.href = '/game';
-		}
-	)
+    getWords('/api/practice/').then(words => {
+      localStorage.setItem('words', JSON.stringify(words));
+    }).finally(() => window.location.href = '/game');
+  });
 }
 
 if (challenge) {
   challenge.addEventListener("click", () => {
     localStorage.setItem("title", "Daily Challenge");
-    window.location.href = "/game";
+    getWords('/api/practice/').then(words => {
+      localStorage.setItem('words', JSON.stringify(words));
+    }).finally(() => window.location.href = '/game');
   });
 }
 
 if (leaderboard) {
   leaderboard.addEventListener("click", () => {
-    window.location.href = "/leaderboard";
+    getLeaderboard().then(leaderboard => {
+      localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
+    }).finally(() => window.location.href = '/leaderboard');
   });
 }
 
@@ -95,7 +107,7 @@ if (backBtn) {
 if (timer) {
   window.addEventListener("load", () => {
     gameTitle.innerText = localStorage.getItem("title");
-    convertArrayToString(words);
+    convertArrayToString(JSON.parse(localStorage.getItem('words')) || []);
     paragraph.textContent = combinedString;
     /*addSpanToCharacters(combinedString);*/
     if (int !== null) {
@@ -170,12 +182,21 @@ function displayTimer() {
   timer.innerText = ` ${h} : ${m} : ${s}`;
 }
 
-function convertArrayToString(arr){
-	for (let i = 0; i < arr.length; i++) {
-  combinedString += arr[i] + " ";
-	}
-	combinedString.trim();
+function msToHMS( duration ) {
 
+  let milliseconds = parseInt((duration % 1000) / 100);
+  let seconds = parseInt((duration / 1000) % 60);
+  let minutes = parseInt((duration / (1000 * 60)) % 60);
+
+  minutes = (minutes < 10) ? "0" + minutes : minutes;
+  seconds = (seconds < 10) ? "0" + seconds : seconds;
+  milliseconds = (milliseconds < 10) ? "00" + milliseconds : (milliseconds < 100) ? "0" + milliseconds : milliseconds;
+
+  return minutes + ":" + seconds + ":" + milliseconds;
+}
+
+function convertArrayToString(arr){
+  combinedString = arr.join(' ');
 }
 
 function convertToMilliSeconds(userTime) {
@@ -201,8 +222,9 @@ function addListItem(item) {
 }
 
 function createLeaderboard() {
-  for (let item of leaderboardlist) {
-    addListItem(item);
+  const leaderboardlist = JSON.parse(localStorage.getItem('leaderboard')) || [];
+  for (const item of leaderboardlist) {
+    addListItem(`${item.username}: ${msToHMS(item.duration)}`);
   }
 }
 
