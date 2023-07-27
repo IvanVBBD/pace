@@ -94,11 +94,14 @@ app.get('/callback', async (req, res) => {
     },
     body: data,
   });
-  
+
   const {
     access_token: accessToken,
     id_token: idToken,
   } = response;
+
+  // console.log(`access token - \n${accessToken}`);
+  // console.log(`ID token - \n${idToken}`);
 
   req.session.accessToken = accessToken;
   req.session.idToken = idToken;
@@ -116,7 +119,7 @@ app.use('/', authenticate);
 app.use('/', privateRouter);
 
 app.get('/api/score', async (req, res) => {
-  
+
   const response = await get(`${api}/score`, req.session.accessToken);
 
   res.send(response);

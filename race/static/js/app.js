@@ -9,6 +9,7 @@ const train = document.querySelector(".train");
 const leaderboardScreen = document.getElementById("leaderboard");
 const loginBtn = document.querySelector(".login-btn");
 const backBtn = document.querySelector('.back-button');
+const logoutBtn = document.querySelector('.logout-button');
 let [milliseconds, seconds, minutes, hours] = [0, 0, 0, 0];
 let int = null;
 let combinedString = "";
@@ -32,14 +33,14 @@ const leaderboardlist = [
 ];
 
 const getWords = url => {
-  
+
   try {
     return fetch(url).then(response => {
 
       if (!response.ok) {
         console.error('Could not get practice words');
       }
-  
+
       return response.json().then(json => json.words);
     });
 
@@ -88,6 +89,13 @@ if (leaderboard) {
 if (backBtn) {
 	backBtn.addEventListener('click', () => {
 		window.location.href = '/';
+		}
+	);
+}
+
+if (logoutBtn) {
+	logoutBtn.addEventListener('click', () => {
+		window.location.href = '/welcome';
 		}
 	);
 }
