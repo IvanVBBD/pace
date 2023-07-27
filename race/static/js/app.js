@@ -8,6 +8,7 @@ const paragraph = document.querySelector('.paragraph');
 const train = document.querySelector('.train');
 const leaderboardScreen = document.getElementById('leaderboard');
 const loginBtn = document.querySelector('.login-btn');
+const backBtn = document.querySelector('.back-button');
 let [milliseconds,seconds,minutes,hours] = [0,0,0,0];
 let int = null;
 let combinedString = "";
@@ -59,6 +60,13 @@ if(leaderboard){
 	)
 }
 
+if (backBtn) {
+	backBtn.addEventListener('click', () => {
+		window.location.href = '/';
+		}
+	);
+}
+
 if(timer){
 
 	window.addEventListener('load', () => {
@@ -71,10 +79,10 @@ if(timer){
 		}
 		int = setInterval(displayTimer,10);
 	});
-	
+
 	window.addEventListener('keypress', (event) => {
 		let character = event.key;
-		
+
 		if(combinedString[count] === character){
 			console.log('correct');
 			if (combinedString[count] !== " ") {
@@ -99,7 +107,7 @@ if(timer){
 				paragraph.innerHTML = temp.join('');
 			}
 		}
-		
+
 	}
 	);
 }
@@ -130,7 +138,7 @@ function convertArrayToString(arr){
   combinedString += arr[i] + " ";
 	}
 	combinedString.trim();
-	
+
 }
 
 function convertToMilliSeconds(userTime){
@@ -138,14 +146,14 @@ function convertToMilliSeconds(userTime){
 	//let ms = milliseconds < 10 ? '00' + milliseconds : milliseconds < 100 ? '0' + milliseconds : milliseconds;
 	let secs = (+a[0]) * 60 * 60 + (+a[1]) * 60 + (+a[2]);
 
-	return ((secs * 1000) + ms); 
+	return ((secs * 1000) + ms);
 }
 
 function convertToSeconds(userTime){
 	let a = userTime.split(':');
 	let secs = (+a[0]) * 60 * 60 + (+a[1]) * 60 + (+a[2]);
 
-	return secs; 
+	return secs;
 }
 
 function addListItem(item){
