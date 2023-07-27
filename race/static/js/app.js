@@ -20,25 +20,6 @@ let h = 0;
 let m = 0;
 let s = 0;
 let ms = 0;
-const words = [
-  "A",
-  "mobile",
-  "app",
-  "developer",
-  "can",
-  "use",
-  "a",
-  "SDK",
-  "to",
-  "integrate",
-  "with",
-  "Cognito",
-  "or",
-  "directly",
-  "access",
-  "server-side",
-  "APIs.",
-];
 
 const leaderboardlist = [
   "Coffee 02:30",
@@ -53,6 +34,25 @@ const leaderboardlist = [
   "Apple 07:30",
 ];
 
+const getWords = url => {
+  
+  try {
+    return fetch(url).then(response => {
+
+      if (!response.ok) {
+        console.error('Could not get practice words');
+      }
+  
+      return response.json().then(json => json.words);
+    });
+
+  } catch {
+    console.error('Could not get practice words');
+    return [];
+  }
+}
+let words = getWords('/api/practice/');
+
 if (loginBtn) {
   loginBtn.addEventListener("click", () => {
     window.location.href = "/login";
@@ -63,11 +63,16 @@ if (leaderboardScreen) {
   createLeaderboard();
 }
 
-if (practice) {
-  practice.addEventListener("click", () => {
-    localStorage.setItem("title", "Practice");
-    window.location.href = "/game";
-  });
+
+if(practice){
+
+  words = getWords('/api/practice');
+
+	practice.addEventListener('click', () => {
+		localStorage.setItem('title','Practice');
+		window.location.href = '/game';
+		}
+	)
 }
 
 if (challenge) {

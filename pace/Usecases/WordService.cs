@@ -16,6 +16,7 @@ namespace Pace.Usecases
         {
             _httpClient = httpClient;
             _databaseService = databaseService;
+            CreateWordEvent();
         }
 
         public async Task CreateWordEvent()
