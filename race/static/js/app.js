@@ -22,7 +22,7 @@ const startTime = new Date().getTime();
 let shouldLogScore = false;
 
 const getWords = async url => {
-  
+
   try {
 
     const response = await fetch(url);
@@ -112,7 +112,7 @@ if (backBtn) {
 
 if (logoutBtn) {
 	logoutBtn.addEventListener('click', () => {
-		window.location.href = '/welcome';
+		window.location.href = '/logout';
 		}
 	);
 }

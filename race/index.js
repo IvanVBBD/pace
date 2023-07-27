@@ -113,6 +113,11 @@ app.get('/login', (req, res) => {
   res.redirect(`${idp}/oauth2/authorize?client_id=${clientId}&response_type=code&scope=email+openid+phone&redirect_uri=${encodeURIComponent(callbackUrl)}`);
 });
 
+app.get('/logout', (req, res) => {
+  req.session.idToken = undefined;
+  res.redirect('/welcome');
+});
+
 /* Authenticated endpoints */
 
 app.use('/', authenticate);

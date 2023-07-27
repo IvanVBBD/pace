@@ -61,7 +61,13 @@ namespace Pace.Usecases
                 return userId;
             }
 
-            throw new Exception("User not found");
+            query = "INSERT INTO USERS (user_name) VALUES (@Username)";
+            SqlParameter[] insertParams = new SqlParameter[]
+            {
+                new SqlParameter("@Username", username)
+            };
+            await _databaseService.ExecuteQuery(query, insertParams);
+            return await GetUserIdByName(username);
         }
 
         public async Task<List<EventResponse>> GetTopScores()
@@ -76,7 +82,7 @@ namespace Pace.Usecases
             List<EventResponse> top10Scores = new List<EventResponse>();
 
             foreach (DataRow row in result.Rows)
-            {   
+            {
                 try
                 {
                     int eventId = Convert.ToInt32(row["event_id"]);
@@ -95,9 +101,9 @@ namespace Pace.Usecases
                     Console.WriteLine(ex.Message);
                     continue;
                 }
-                
 
-               
+
+
             }
 
             return top10Scores;
