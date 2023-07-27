@@ -3,6 +3,7 @@ using Pace.interfaces;
 using Pace.Models;
 using System.Text.Json.Nodes;
 using System.Text.Json;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Pace.Controllers
 {
@@ -11,6 +12,7 @@ namespace Pace.Controllers
     public class WordController : ControllerBase
     {
         [HttpGet]
+        [Authorize]
         [Route("challenge")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(WordResponse), StatusCodes.Status200OK)]
@@ -34,6 +36,7 @@ namespace Pace.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         [Route("pratice")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(WordResponse), StatusCodes.Status200OK)]
@@ -55,8 +58,5 @@ namespace Pace.Controllers
                 return BadRequest(new ProblemDetails() { Detail = ex.Message });
             }
         }
-
-
-
     }
 }
