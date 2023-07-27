@@ -6,6 +6,8 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import bodyParser from 'body-parser';
 import session from 'express-session';
+import publicRouter from './routes/public.route.js';
+import privateRouter from './routes/private.route.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -61,6 +63,10 @@ const get = async (url, req, options = {}) => {
     };
   }
 };
+
+app.use('/static',express.static(`${__dirname}/static/`));
+app.use('/welcome', publicRouter);
+app.use('/', privateRouter);
 
 app.get('/', (req, res) => {
   res.send(`<a href="/api/score">score</a><br/><a href="/api/challenge">challenge</a><br/><a href="/api/practice">practice</a><br/><a href="${idp}/oauth2/authorize?client_id=${clientId}&response_type=code&scope=email+openid+phone&redirect_uri=${callbackUrl}">login</a>`);
