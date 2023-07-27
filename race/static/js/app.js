@@ -9,6 +9,10 @@ const train = document.querySelector(".train");
 const leaderboardScreen = document.getElementById("leaderboard");
 const loginBtn = document.querySelector(".login-btn");
 const backBtn = document.querySelector('.back-button');
+const logoutBtn = document.querySelector('.logout-button');
+const gameOver = document.querySelector('.game-over');
+const gameOverText = document.querySelector('.game-over-text');
+const content = document.querySelector('.content');
 let [milliseconds, seconds, minutes, hours] = [0, 0, 0, 0];
 let int = null;
 let combinedString = "";
@@ -104,6 +108,13 @@ if (backBtn) {
 	);
 }
 
+if (logoutBtn) {
+	logoutBtn.addEventListener('click', () => {
+		window.location.href = '/welcome';
+		}
+	);
+}
+
 if (timer) {
   window.addEventListener("load", () => {
     gameTitle.innerText = localStorage.getItem("title");
@@ -143,6 +154,11 @@ if (timer) {
         let duration = `${h}:${m}:${s}`;
         console.log(`${h}:${m}:${s}:${ms}`);
         console.log(convertToMilliSeconds(duration));
+		timer.style.display = 'none';
+		content.style.display = 'none';
+		gameOver.style.display = 'flex';
+		gameOverText.textContent += `${h}:${m}:${s}:${ms}`;
+
       }
     } else {
       if (combinedString[count] !== " ") {

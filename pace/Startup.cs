@@ -31,7 +31,7 @@ namespace Pace
             });
             services.AddSingleton<IDatabaseService, DatabaseService>();
             services.AddScoped<IScoreService, ScoreService>();
-            services.AddScoped<IWordService, WordService>();
+            services.AddSingleton<IWordService, WordService>();
             services.AddAuthorization();
             services.AddHealthChecks();
             services.AddControllers();
