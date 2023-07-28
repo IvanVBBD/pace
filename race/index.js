@@ -7,6 +7,8 @@ import { fileURLToPath } from 'url';
 import bodyParser from 'body-parser';
 import session from 'express-session';
 import { authenticate } from './middlewares/authenticate.js';
+import publicRouter from './routes/public.route.js';
+import privateRouter from './routes/private.route.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -65,9 +67,9 @@ const get = async (url, accessToken, options = {}) => {
   }
 };
 
-app.get('/', (req, res) => {
-  res.send(`<a href="/api/score">score</a><br/><a href="/api/challenge">challenge</a><br/><a href="/api/practice">practice</a><br/><a href="${idp}/oauth2/authorize?client_id=${clientId}&response_type=code&scope=email+openid+phone&redirect_uri=${encodeURIComponent(callbackUrl)}">login</a>`);
-});
+app.use('/static',express.static(`${__dirname}/static/`));
+app.use('/welcome', publicRouter);
+app.use('/', privateRouter);
 
 app.get('/callback', async (req, res) => {
 
@@ -98,15 +100,28 @@ app.get('/callback', async (req, res) => {
     id_token: idToken,
   } = response;
 
+  // console.log(`access token - \n${accessToken}`);
+  // console.log(`ID token - \n${idToken}`);
+
   req.session.accessToken = accessToken;
   req.session.idToken = idToken;
 
-  res.redirect('/api/score');
+  res.redirect('/');
+});
+
+app.get('/login', (req, res) => {
+  res.redirect(`${idp}/oauth2/authorize?client_id=${clientId}&response_type=code&scope=email+openid+phone&redirect_uri=${encodeURIComponent(callbackUrl)}`);
+});
+
+app.get('/logout', (req, res) => {
+  req.session.idToken = undefined;
+  res.redirect('/welcome');
 });
 
 /* Authenticated endpoints */
 
 app.use('/', authenticate);
+app.use('/', privateRouter);
 
 app.get('/api/score', async (req, res) => {
 
@@ -129,25 +144,33 @@ app.get('/api/practice', async (req, res) => {
 
 app.post('/api/score', async (req, res) => {
 
-  const {
-    time,
-    username,
-  } = req.body;
+  const time = req.body.time;
+  const username = req.user?.['cognito:username'];
 
-  // TODO: Sanitize input
+  if (Number.isNaN(time) || !username) {
+    res.status(404).send({ error: 'Method not allowed' });
+  }
 
   const response = await get(`${api}/score`, req.session.accessToken, {
-    body: {
-      time,
+    body: JSON.stringify({
+      time: Number(time),
       username,
-    },
+    }),
     method: 'post',
     headers: {
       'Content-Type': 'application/json',
     },
   });
 
-  res.send(response);
+  if (!response.ok) {
+    res.status(StatusCodes.InvalidResponse).send({
+      error: {
+        message: 'Failed to add score',
+        response,
+      },
+    });
+  }
+  res.status(200);
 });
 
 app.listen(port);
