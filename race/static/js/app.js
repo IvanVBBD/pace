@@ -18,7 +18,7 @@ let combinedString = "";
 let count = 0;
 let incorrect = 0;
 let duration = 0;
-const startTime = new Date().getTime();
+let startTime = new Date().getTime();
 
 const getWords = async url => {
 
@@ -59,6 +59,43 @@ const getLeaderboard = async () => {
     console.error(error);
     return [];
   }
+};
+
+const startGame = url => {
+  getWords(url).then(words => {
+    combinedString = words.join(' ');
+  }).finally(() => {
+    paragraph.textContent = combinedString;
+    startTime = new Date().getTime();
+    if (int !== null) {
+      clearInterval(int);
+    }
+    int = setInterval(displayTimer, 10);
+  });
+};
+
+const createLeaderboard = (leaderboard = []) => {
+  for (const item of leaderboard) {
+    addListItem(`${item.username}: ${msToHMS(item.duration)}`);
+  }
+};
+
+const addListItem = (item) => {
+  const list = document.querySelector("ol");
+  let entry = document.createElement("li");
+  entry.appendChild(document.createTextNode(item));
+  list.appendChild(entry);
+};
+
+const updateTrain = () => {
+  train.style.transform = `translateX(calc(90vw / ${combinedString.length / (count || 1) }))`;
+};
+
+if (leaderboardScreen) {
+
+  getLeaderboard().then(leaderboard => {
+    createLeaderboard(leaderboard);
+  });
 }
 
 if (loginBtn) {
@@ -67,72 +104,63 @@ if (loginBtn) {
   });
 }
 
-if (leaderboardScreen) {
-  createLeaderboard();
-}
-
 
 if(practice){
 
 	practice.addEventListener('click', () => {
 		localStorage.setItem('title','Practice');
-    getWords('/api/practice/').then(words => {
-      localStorage.setItem('words', JSON.stringify(words));
-    }).finally(() => window.location.href = '/game');
+    window.location.href = '/game'
   });
 }
 
 if (challenge) {
   challenge.addEventListener("click", () => {
     localStorage.setItem("title", "Daily Challenge");
-    getWords('/api/challenge/').then(words => {
-      localStorage.setItem('words', JSON.stringify(words));
-    }).finally(() => {
-      window.location.href = '/game';
-    });
+    window.location.href = '/game';
   });
 }
 
 if (leaderboard) {
   leaderboard.addEventListener("click", () => {
-    getLeaderboard().then(leaderboard => {
-      localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
-    }).finally(() => window.location.href = '/leaderboard');
+    localStorage.setItem("title", "Leaderboard");
+    window.location.href = '/leaderboard';
   });
 }
 
 if (backBtn) {
 	backBtn.addEventListener('click', () => {
-		window.location.href = '/';
-		}
-	);
+    localStorage.setItem("title", "Keyboard Racers");
+    window.location.href = '/';
+  });
 }
 
 if (logoutBtn) {
-	logoutBtn.addEventListener('click', () => {
+  logoutBtn.addEventListener('click', () => {
+    localStorage.setItem("title", "Keyboard Racers");
 		window.location.href = '/logout';
-		}
-	);
+  });
 }
 
 if (timer) {
   window.addEventListener("load", () => {
-    gameTitle.innerText = localStorage.getItem("title");
-    convertArrayToString(JSON.parse(localStorage.getItem('words')) || []);
-    paragraph.textContent = combinedString;
-    /*addSpanToCharacters(combinedString);*/
-    if (int !== null) {
-      clearInterval(int);
+    const title = localStorage.getItem("title");
+    gameTitle.innerText = title;
+
+    if (title === 'Daily Challenge') {
+      startGame('/api/challenge/');
     }
-    int = setInterval(displayTimer, 10);
+
+    if (title === 'Practice') {
+      startGame('/api/practice/');
+    }
   });
 
   let correctlyTyped = "";
   window.addEventListener("keypress", (event) => {
-    let character = event.key;
+    const key = event.key;
 
-    if (combinedString[count] === character) {
-      correctlyTyped += character;
+    if (combinedString[count] === key) {
+      correctlyTyped += key;
 
       if (combinedString[count] !== " ") {
         let temp = combinedString.split("");
@@ -168,8 +196,8 @@ if (timer) {
             headers: {
               'Content-Type': 'application/json',
             },
-          }).then(response => {
-            console.log(response);
+          }).then(() => {
+            console.log('Game finished');
           });
         }
 
@@ -194,50 +222,13 @@ function displayTimer() {
 
 function msToHMS(duration) {
 
-  const milliseconds = parseInt((duration % 1000) / 100);
+  let milliseconds = parseInt((duration % 1000));
   let seconds = parseInt((duration / 1000) % 60);
   let minutes = parseInt((duration / (1000 * 60)) % 60);
 
   minutes = (minutes < 10) ? "0" + minutes : minutes;
   seconds = (seconds < 10) ? "0" + seconds : seconds;
+  milliseconds = (milliseconds < 10) ? "00" + milliseconds : (milliseconds < 100) ? "0" + milliseconds : milliseconds;
 
   return minutes + ":" + seconds + ":" + milliseconds;
 }
-
-function convertArrayToString(arr){
-  combinedString = arr.join(' ');
-}
-
-function convertToSeconds(userTime) {
-  let a = userTime.split(":");
-  let secs = +a[0] * 60 * 60 + +a[1] * 60 + +a[2];
-
-	return secs;
-}
-
-function addListItem(item) {
-  const list = document.querySelector("ol");
-  let entry = document.createElement("li");
-  entry.appendChild(document.createTextNode(item));
-  list.appendChild(entry);
-}
-
-function createLeaderboard() {
-  const leaderboardlist = JSON.parse(localStorage.getItem('leaderboard')) || [];
-  for (const item of leaderboardlist) {
-    addListItem(`${item.username}: ${msToHMS(item.duration)}`);
-  }
-}
-
-function updateTrain() {
-  train.style.transform = `translateX(calc(90vw / ${combinedString.length / (count || 1) }))`;
-}
-
-/*function addSpanToCharacters(input){
-	let characters = input.split('');
-	let tempWord = '';
-	for (let character of characters) {
-		tempWord += `<span id="character-${i}">${character}</span>`;
-	}
-	input = tempWord;
-}*/
