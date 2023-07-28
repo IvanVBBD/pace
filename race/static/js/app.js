@@ -13,6 +13,7 @@ const logoutBtn = document.querySelector('.logout-button');
 const gameOver = document.querySelector('.game-over');
 const gameOverText = document.querySelector('.game-over-text');
 const content = document.querySelector('.content');
+let gameFinished = false;
 let int = null;
 let combinedString = "";
 let count = 0;
@@ -72,6 +73,49 @@ const startGame = url => {
     }
     int = setInterval(displayTimer, 10);
   });
+};
+
+const postScore = () => {
+  if (localStorage.getItem("title") === 'Daily Challenge') {
+    fetch('/api/score/', {
+      method: 'post',
+      body: JSON.stringify({
+        time: duration,
+      }),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }).then(() => {
+      console.log('Game finished');
+    });
+  }
+};
+
+const assignPenalty = () => {
+  const penalty = 2000 * incorrect;
+  gameOverText.textContent += ' \nWith a penalty of: ' + msToHMS(penalty);
+  duration += penalty;
+}
+
+const endGame = () => {
+
+  if (!gameFinished) {
+    if (int !== null) {
+      clearInterval(int);
+    }
+
+    timer.style.display = 'none';
+    content.style.display = 'none';
+    gameOver.style.display = 'flex';
+    gameOverText.textContent += msToHMS(duration);
+
+    if (incorrect > 0) {
+      assignPenalty();
+    }
+ 
+    postScore();
+    gameFinished = true;
+  }
 };
 
 const createLeaderboard = (leaderboard = []) => {
@@ -175,32 +219,8 @@ if (timer) {
       count++;
       updateTrain();
 
-      if (count === combinedString.length) {
-        timer.style.display = 'none';
-        content.style.display = 'none';
-        gameOver.style.display = 'flex';
-        gameOverText.textContent += msToHMS(duration);
-
-        if (incorrect > 0) {
-          const penalty = 2000 * incorrect;
-          gameOverText.textContent += ' \nWith a penalty of: ' + msToHMS(penalty);
-          duration += penalty;
-        }
-
-        if (localStorage.getItem("title") === 'Daily Challenge') {
-          fetch('/api/score/', {
-            method: 'post',
-            body: JSON.stringify({
-              time: duration,
-            }),
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          }).then(() => {
-            console.log('Game finished');
-          });
-        }
-
+      if (count >= combinedString.length) {
+        endGame();
       }
     } else {
       if (combinedString[count] !== " ") {
@@ -216,6 +236,10 @@ if (timer) {
 }
 
 function displayTimer() {
+  if (duration >= 1000 * 60) {
+    endGame();
+  }
+
   duration = new Date().getTime() - startTime;
   timer.innerText = msToHMS(duration);
 }
