@@ -19,7 +19,6 @@ let count = 0;
 let incorrect = 0;
 let duration = 0;
 const startTime = new Date().getTime();
-let shouldLogScore = false;
 
 const getWords = async url => {
 
@@ -89,7 +88,6 @@ if (challenge) {
     getWords('/api/challenge/').then(words => {
       localStorage.setItem('words', JSON.stringify(words));
     }).finally(() => {
-      shouldLogScore = true;
       window.location.href = '/game';
     });
   });
@@ -161,7 +159,7 @@ if (timer) {
           duration += penalty;
         }
 
-        if (shouldLogScore) {
+        if (localStorage.getItem("title") === 'Daily Challenge') {
           fetch('/api/score/', {
             method: 'post',
             body: JSON.stringify({
@@ -172,7 +170,7 @@ if (timer) {
             },
           }).then(response => {
             console.log(response);
-          }).finally(() => shouldLogScore = false);
+          });
         }
 
       }
