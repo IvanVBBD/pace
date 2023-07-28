@@ -14,7 +14,7 @@ const gameOver = document.querySelector('.game-over');
 const gameOverText = document.querySelector('.game-over-text');
 const content = document.querySelector('.content');
 let gameFinished = false;
-let int = null;
+let checkTime = null;
 let combinedString = "";
 let count = 0;
 let incorrect = 0;
@@ -67,12 +67,17 @@ const startGame = url => {
     combinedString = words.join(' ');
   }).finally(() => {
     paragraph.textContent = combinedString;
-    startTime = new Date().getTime();
-    if (int !== null) {
-      clearInterval(int);
-    }
-    int = setInterval(displayTimer, 10);
   });
+};
+
+const initializeTimer = () => {
+  startTime = new Date().getTime();
+
+  if (checkTime !== null) {
+    clearInterval(checkTime);
+  }
+
+  checkTime = setInterval(displayTimer, 10);
 };
 
 const postScore = () => {
@@ -100,8 +105,8 @@ const assignPenalty = () => {
 const endGame = () => {
 
   if (!gameFinished) {
-    if (int !== null) {
-      clearInterval(int);
+    if (checkTime !== null) {
+      clearInterval(checkTime);
     }
 
     timer.style.display = 'none';
@@ -204,6 +209,11 @@ if (timer) {
     const key = event.key;
 
     if (combinedString[count] === key) {
+      if (count === 0) {
+
+        initializeTimer();
+      }
+
       correctlyTyped += key;
 
       if (combinedString[count] !== " ") {
