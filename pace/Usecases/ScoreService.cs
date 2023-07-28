@@ -72,10 +72,7 @@ namespace Pace.Usecases
 
         public async Task<List<EventResponse>> GetTopScores()
         {
-            string query = "SELECT TOP 10 E.event_id, U.user_name, E.duration " +
-                    "FROM EVENTRESPONSES AS E " +
-                    "INNER JOIN USERS AS U ON E.user_id = U.user_id " +
-                    "ORDER BY E.duration ASC";
+            string query = "SELECT TOP 10 E.event_id, U.user_name, E.duration FROM EVENTRESPONSES AS E INNER JOIN (SELECT user_id, MIN(duration) AS min_duration FROM EVENTRESPONSES GROUP BY user_id) AS E_MIN ON E.user_id = E_MIN.user_id AND E.duration = E_MIN.min_duration INNER JOIN USERS AS U ON E.user_id = U.user_id ORDER BY E.duration ASC;";
 
             DataTable result = await _databaseService.ExecuteQuery(query, null);
 
