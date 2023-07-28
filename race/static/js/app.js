@@ -86,7 +86,7 @@ if(practice){
 if (challenge) {
   challenge.addEventListener("click", () => {
     localStorage.setItem("title", "Daily Challenge");
-    getWords('/api/practice/').then(words => {
+    getWords('/api/challenge/').then(words => {
       localStorage.setItem('words', JSON.stringify(words));
     }).finally(() => {
       shouldLogScore = true;
